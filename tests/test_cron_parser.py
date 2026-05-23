@@ -72,6 +72,16 @@ def test_entry_schedule_property():
     assert entry.schedule == "0 3 * * 1"
 
 
+def test_entry_schedule_property_for_at_shortcut():
+    """@-style shortcuts store the shortcut token in minute; schedule should reflect that."""
+    entry = CronEntry(
+        minute="@daily", hour=None, day_of_month=None,
+        month=None, day_of_week=None,
+        command="/bin/cleanup", raw_line="@daily /bin/cleanup"
+    )
+    assert entry.schedule == "@daily"
+
+
 def test_entry_str_includes_host_and_user():
     entry = CronEntry(
         minute="0", hour="1", day_of_month="*",
