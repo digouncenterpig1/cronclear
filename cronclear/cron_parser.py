@@ -22,6 +22,11 @@ class CronEntry:
     def schedule(self) -> str:
         return f"{self.minute} {self.hour} {self.day_of_month} {self.month} {self.day_of_week}"
 
+    @property
+    def is_shortcut(self) -> bool:
+        """Return True if this entry uses an @ shortcut (e.g. @reboot, @daily)."""
+        return self.minute.startswith("@")
+
     def __str__(self) -> str:
         user_info = f"{self.user}@" if self.user else ""
         host_info = self.host or "localhost"
