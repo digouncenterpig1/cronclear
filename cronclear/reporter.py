@@ -25,6 +25,14 @@ def _fmt_next_run(dt: datetime | None) -> str:
     return f"[green]in {hours}h {minutes % 60}m[/green]"
 
 
+def _fmt_frequency(s: ScheduleSummary) -> str:
+    """Format the frequency string, highlighting high-frequency jobs in bold red."""
+    freq_str = f"{s.frequency_per_day:.1f}"
+    if s.is_frequent:
+        return f"[bold red]{freq_str}[/bold red]"
+    return freq_str
+
+
 def render_summary_table(report: AnalysisReport) -> None:
     table = Table(
         title=f"Cron Schedule Report ({report.total_jobs} jobs)",
@@ -39,15 +47,12 @@ def render_summary_table(report: AnalysisReport) -> None:
     table.add_column("Command", style="white", max_width=40)
 
     for s in report.summaries:
-        freq_str = f"{s.frequency_per_day:.1f}"
-        if s.is_frequent:
-            freq_str = f"[bold red]{freq_str}[/bold red]"
         table.add_row(
             s.host,
             s.user,
             s.schedule,
             _fmt_next_run(s.next_run),
-            freq_str,
+            _fmt_frequency(s),
             s.command,
         )
 
