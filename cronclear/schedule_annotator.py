@@ -40,6 +40,13 @@ class AnnotationReport:
     def by_label(self, label: str) -> List[AnnotatedEntry]:
         return [a for a in self.entries if a.label == label]
 
+    def label_summary(self) -> dict:
+        """Return a dict mapping each label to the count of entries with that label."""
+        summary: dict = {}
+        for annotated in self.entries:
+            summary[annotated.label] = summary.get(annotated.label, 0) + 1
+        return summary
+
 
 def _resolve_label(entry: CronEntry) -> str:
     for predicate, label in _LABELS:
