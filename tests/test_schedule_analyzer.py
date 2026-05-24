@@ -83,3 +83,15 @@ def test_analyze_empty_results():
     assert report.total_jobs == 0
     assert report.duplicates == {}
     assert report.frequent_jobs == []
+
+
+def test_analyze_total_jobs_counts_across_multiple_hosts():
+    """total_jobs should reflect the sum of all entries across all hosts."""
+    entries_host1 = [_make_entry("/usr/bin/job_a.sh", "0 1 * * *", host="host1"),
+                     _make_entry("/usr/bin/job_b.sh", "0 2 * * *", host="host1")]
+    entries_host2 = [_make_entry("/usr/bin/job_c.sh", "0 3 * * *", host="host2")]
+    report = analyze([
+        _make_result("host1", entries_host1),
+        _make_result("host2", entries_host2),
+    ])
+    assert report.total_jobs == 3
