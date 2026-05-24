@@ -29,6 +29,10 @@ class SearchReport:
     def hosts(self) -> List[str]:
         return sorted({r.host for r in self.results})
 
+    def by_host(self, host: str) -> List[SearchResult]:
+        """Return only the results matching a specific host."""
+        return [r for r in self.results if r.host == host]
+
 
 def _entry_matches_text(entry: CronEntry, pattern: re.Pattern) -> Optional[str]:
     """Return which field first matched, or None."""
@@ -39,6 +43,9 @@ def _entry_matches_text(entry: CronEntry, pattern: re.Pattern) -> Optional[str]:
     if entry.user and pattern.search(entry.user):
         return "user"
     return None
+
+
+VALID_FIELDS = frozenset({"command", "schedule", "user"})
 
 
 def search_entries(
@@ -55,7 +62,16 @@ def search_entries(
         query: regex or plain-text pattern to search for.
         field: restrict search to 'command', 'schedule', or 'user'.
         case_sensitive: whether the match is case-sensitive.
+
+    Raises:
+        ValueError: if the query is an invalid regex, or if an unrecognised
+            field name is provided.
     """
+    if field is not None and field not in VALID_FIELDS:
+        raise ValueError(
+            f"Unknown field {field!r}. Valid options are: {sorted(VALID_FIELDS)}"
+        )
+
     flags = 0 if case_sensitive else re.IGNORECASE
     try:
         pattern = re.compile(query, flags)
