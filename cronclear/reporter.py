@@ -17,6 +17,8 @@ def _fmt_next_run(dt: datetime | None) -> str:
         return "[red]N/A[/red]"
     delta = dt - datetime.now()
     minutes = int(delta.total_seconds() / 60)
+    if minutes < 0:
+        return "[red]overdue[/red]"
     if minutes < 60:
         return f"[yellow]in {minutes}m[/yellow]"
     hours = minutes // 60
@@ -71,7 +73,19 @@ def render_frequent_jobs(report: AnalysisReport) -> None:
         console.print(f"  [{s.host}] {s.user}: {s.schedule} → {s.command[:50]}")
 
 
+def render_stats(report: AnalysisReport) -> None:
+    """Print a brief stats footer with host and user counts."""
+    hosts = {s.host for s in report.summaries}
+    users = {s.user for s in report.summaries}
+    console.print(
+        f"\n[dim]Hosts: {len(hosts)}  |  Users: {len(users)}  |  "
+        f"Duplicates: {len(report.duplicates)}  |  "
+        f"High-frequency: {len(report.frequent_jobs)}[/dim]"
+    )
+
+
 def render_report(report: AnalysisReport) -> None:
     render_summary_table(report)
     render_duplicates(report)
     render_frequent_jobs(report)
+    render_stats(report)
