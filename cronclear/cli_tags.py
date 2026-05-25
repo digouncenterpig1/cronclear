@@ -42,9 +42,22 @@ def build_tag_parser(subparsers: argparse._SubParsersAction) -> None:  # type: i
         )
 
 
-def run_tag_command(args: argparse.Namespace) -> int:
+def _load_tag_manager(args: argparse.Namespace) -> TagManager:
+    """Instantiate a TagManager from the store path in *args*.
+
+    Exits with a helpful message if the store file exists but cannot be read
+    (e.g. permission error or malformed JSON).
+    """
     store = Path(args.store)
-    tm = TagManager(store_path=store)
+    try:
+        return TagManager(store_path=store)
+    except (OSError, ValueError) as exc:
+        print(f"error: could not load tag store '{store}': {exc}", file=sys.stderr)
+        sys.exit(1)
+
+
+def run_tag_command(args: argparse.Namespace) -> int:
+    tm = _load_tag_manager(args)
 
     if args.tag_cmd == "add":
         tm.add_tag(args.host, args.tag)
