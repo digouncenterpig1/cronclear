@@ -102,3 +102,17 @@ def test_build_calendar_ignores_bad_schedule():
     e.is_shortcut.return_value = False
     cal = build_calendar([e])
     assert cal.total_slots_used() == 0
+
+
+def test_build_calendar_multiple_entries_same_slot():
+    """Multiple entries scheduled at the same day/hour should stack in the cell."""
+    entries = [
+        _entry("0 8 * * 1", cmd="job_a.sh"),
+        _entry("0 8 * * 1", cmd="job_b.sh"),
+        _entry("0 8 * * 1", cmd="job_c.sh"),
+    ]
+    cal = build_calendar(entries)
+    cell = cal.get("Mon", 8)
+    assert cell.count == 3
+    # other days at the same hour should be unaffected
+    assert cal.get("Wed", 8).count == 0
